@@ -1,7 +1,8 @@
 from telegram.ext import Updater, CommandHandler
 import logging
-from constants import TOKEN
+import os
 
+print(os.environ.get('TOKEN'))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -13,7 +14,7 @@ def start(update, context):
 
 def main():
     updater = Updater(
-        token=TOKEN, use_context=True)
+        token=os.environ.get('TOKEN'), use_context=True)
 
     dp = updater.dispatcher
 
