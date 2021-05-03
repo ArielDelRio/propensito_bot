@@ -1,0 +1,1 @@
+worker: python propensito_bot.py
