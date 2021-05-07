@@ -18,13 +18,13 @@ def help_command(update: Update, _: CallbackContext) -> None:
 
 
 def callback_handler(update: Update, _: CallbackContext) -> None:
-    query = update.callback_query
+    chat = update.message.chat
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-    query.answer()
+    # query.answer()
 
-    query.edit_message_text(text=f"Selected option: {query.data}")
+    chat.send_message(text=f"Selected option: {query.data}")
 
 
 def inlinequery(update: Update, _: CallbackContext) -> None:
