@@ -38,6 +38,7 @@ def start(update: Update, _: CallbackContext) -> None:
 
 
 def help_command(update: Update, _: CallbackContext) -> None:
+def help(update: Update, _: CallbackContext) -> None:
     update.message.reply_text('Help Message')
 
 
@@ -108,6 +109,7 @@ def main():
     dispatcher.add_handler(CommandHandler("help", help_command))
     # dispatcher.add_handler(CommandHandler("dime", cmd_decir))
     # on non command i.e message - echo the message on Telegram
+    dispatcher.add_handler(CommandHandler("help", help))
     dispatcher.add_handler(InlineQueryHandler(inlinequery))
     updater.dispatcher.add_handler(
         CallbackQueryHandler(callback_handler))
