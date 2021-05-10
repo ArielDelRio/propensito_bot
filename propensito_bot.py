@@ -110,11 +110,13 @@ def main():
     # dispatcher.add_handler(CommandHandler("dime", cmd_decir))
     # on non command i.e message - echo the message on Telegram
     dispatcher.add_handler(CommandHandler("help", help))
+    # For @bot_name inline command use
     dispatcher.add_handler(InlineQueryHandler(inlinequery))
-    updater.dispatcher.add_handler(
+
+    dispatcher.add_handler(
         CallbackQueryHandler(callback_handler))
 
-    updater.start_polling(clean=True)
+    updater.start_polling()
     updater.idle()
 
 
