@@ -8,6 +8,16 @@ import os
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
+chats = {}
+
+def get_players_ready_message(chat_id):
+    message = "Esperando jugadores...\nUnidos: "
+    if chat_id in chats:
+        users = chats[chat_id]
+        for user in users:
+            message += '\n' + user.first_name
+    return message
+
 def get_inline_menu():
     return [
         InlineQueryResultArticle(
@@ -36,10 +46,12 @@ MAIN_MENU_KEYBOARD = [
 def start(update: Update, _: CallbackContext) -> None:
     update.message.reply_text('Hello World')
 
-
 def help(update: Update, _: CallbackContext) -> None:
     update.message.reply_text('Help Message')
 
+def main_menu(update: Update, _: CallbackContext) -> None:
+    chat_id = update.message.chat.id
+    update.message.reply_text(text=get_players_ready_message(chat_id), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD))
 
 def callback_handler(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
@@ -66,6 +78,8 @@ def main():
 
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CommandHandler("main_menu", main_menu))
+
     # For @bot_name inline command use
     dispatcher.add_handler(InlineQueryHandler(inlinequery))
 
