@@ -44,24 +44,8 @@ def help(update: Update, _: CallbackContext) -> None:
 
 def callback_handler(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
-    users = []
-    mess = "Esperando jugadores...\nUnidos: "
 
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
     query.answer()
-    users.append(query.from_user.first_name)
-    for user in users:
-        mess += '\n' + user
-    keyboard = [
-        [
-            InlineKeyboardButton("Unirse", callback_data='join'),
-            InlineKeyboardButton("Empezar", callback_data='start'),
-        ],
-        [InlineKeyboardButton("X", callback_data='3')],
-    ]
-    query.edit_message_text(text=mess, reply_markup=InlineKeyboardMarkup(keyboard))
-
     chat_id = query.message.chat.id
     if chat_id in chats.keys():
         if query.from_user not in chats[chat_id]:
