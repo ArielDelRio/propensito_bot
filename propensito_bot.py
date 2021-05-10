@@ -91,13 +91,7 @@ def inlinequery(update: Update, _: CallbackContext) -> None:
 
     update.inline_query.answer(results)
 
-# def startgame_command(bot, update, args):
-#     chat_id = update.message.chat_id
-#     bot.send_message(chat_id, 'test')
 
-def cmd_decir(update, context):
-    # context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
-    update.message.chat.send_message('hiiii')
 
 def main():
     updater = Updater(
@@ -106,9 +100,6 @@ def main():
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
-    # dispatcher.add_handler(CommandHandler("dime", cmd_decir))
-    # on non command i.e message - echo the message on Telegram
     dispatcher.add_handler(CommandHandler("help", help))
     # For @bot_name inline command use
     dispatcher.add_handler(InlineQueryHandler(inlinequery))
