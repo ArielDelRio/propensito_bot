@@ -8,6 +8,30 @@ import os
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
+def get_inline_menu():
+    return [
+        InlineQueryResultArticle(
+            id=str(uuid4()),
+            title="Main Menu",
+            input_message_content=InputTextMessageContent(
+                get_players_ready_message()),
+            reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD)
+        ),
+        InlineQueryResultArticle(
+            id=str(uuid4()),
+            title="Help message",
+            input_message_content=InputTextMessageContent("Help message"),
+        ),
+    ]
+
+MAIN_MENU_KEYBOARD = [
+        [
+            InlineKeyboardButton("Unirse", callback_data='join'),
+            InlineKeyboardButton("Empezar", callback_data='start'),
+        ],
+        [InlineKeyboardButton("X", callback_data='3')],
+    ]
+
 
 def start(update: Update, _: CallbackContext) -> None:
     update.message.reply_text('Hello World')
