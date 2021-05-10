@@ -62,35 +62,17 @@ def callback_handler(update: Update, _: CallbackContext) -> None:
     ]
     query.edit_message_text(text=mess, reply_markup=InlineKeyboardMarkup(keyboard))
 
+    chat_id = query.message.chat.id
+    if chat_id in chats.keys():
+        if query.from_user not in chats[chat_id]:
+            chats[chat_id].append(query.from_user)
+    else:
+        chats[chat_id] = [query.from_user]
+
+    query.edit_message_text(text=get_players_ready_message(chat_id), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD))
+
 def inlinequery(update: Update, _: CallbackContext) -> None:
-    query_start = "Start Game"
-    query_help = "Help message"
-
-    keyboard = [
-        [
-            InlineKeyboardButton("Unirse", callback_data='join'),
-            InlineKeyboardButton("Empezar", callback_data='start'),
-        ],
-        [InlineKeyboardButton("X", callback_data='3')],
-    ]
-
-    results = [
-        InlineQueryResultArticle(
-            id=str(uuid4()),
-            title=query_start,
-            input_message_content=InputTextMessageContent(
-                'Esperando jugadores...'),
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        ),
-        InlineQueryResultArticle(
-            id=str(uuid4()),
-            title=query_help,
-            input_message_content=InputTextMessageContent(query_help),
-        ),
-    ]
-
-    update.inline_query.answer(results)
-
+    update.inline_query.answer(get_inline_menu())
 
 
 def main():
