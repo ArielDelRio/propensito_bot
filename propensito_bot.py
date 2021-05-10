@@ -37,7 +37,6 @@ def start(update: Update, _: CallbackContext) -> None:
     update.message.reply_text('Hello World')
 
 
-def help_command(update: Update, _: CallbackContext) -> None:
 def help(update: Update, _: CallbackContext) -> None:
     update.message.reply_text('Help Message')
 
