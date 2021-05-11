@@ -8,12 +8,18 @@ import os
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-chats = {}
+
+game_rooms = {}
+
 
 def get_players_ready_message(chat_id):
     message = "Esperando jugadores...\nUnidos: "
-    if chat_id in chats:
-        users = chats[chat_id]
+
+    if not chat_id:
+        return message
+
+    if chat_id in game_rooms:
+        users = game_rooms[chat_id]
         for user in users:
             message += '\n' + user.first_name
     return message
@@ -33,6 +39,18 @@ def get_inline_menu():
             input_message_content=InputTextMessageContent("Help message"),
         ),
     ]
+
+
+def add_player(chat_id, user):
+    if chat_id in game_rooms.keys():
+        if user not in game_rooms[chat_id]:
+            game_rooms[chat_id].append(user)
+            return True
+        return False
+    else:
+        game_rooms[chat_id] = [user]
+        return True
+
 
 MAIN_MENU_KEYBOARD = [
         [
