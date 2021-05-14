@@ -13,8 +13,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 
-game_rooms = {}
-
 # Stages
 PREPARE_GAME, IN_GAME = range(2)
 
@@ -22,58 +20,49 @@ PREPARE_GAME, IN_GAME = range(2)
 JOIN, START, EXIT = range(3)
 
 
-def get_players_ready_message(chat_id):
+def get_players_ready_message(chat_id, context):
     message = "Esperando jugadores...\nUnidos: "
 
     if not chat_id:
         return message
 
-    if chat_id in game_rooms:
-        users = game_rooms[chat_id]
-        for user in users:
-            message += '\n' + user.first_name
+    users = context.chat_data["players"]
+    for user in users:
+        message += '\n' + user.first_name
     return message
 
 
-def get_players_in_game_message(chat_id):
+def get_players_in_game_message(chat_id, context):
     message = "Jugadores: \n"
 
     if not chat_id:
         return message
 
-    if chat_id in game_rooms:
-        users = game_rooms[chat_id]
-        for user in users:
-            message += '\n' + user.first_name
+    users = context.chat_data["players"]
+    for user in users:
+        message += '\n' + user.first_name
     return message
 
 
-def add_player(chat_id, user):
-    if chat_id in game_rooms.keys():
-        if user not in game_rooms[chat_id]:
-            game_rooms[chat_id].append(user)
-            return True
-        return False
-    else:
-        game_rooms[chat_id] = [user]
+def add_player(chat_id, user, context):
+    if not context.chat_data.get("players"):
+        context.chat_data["players"] = [user]
         return True
-
-
-def clear_room(chat_id):
-    if chat_id in game_rooms:
-        game_rooms.pop(chat_id)
+    if user not in context.chat_data['players']:
+        context.chat_data["players"].append(user)
+        return True
+    else:
+        return False
 
 
 def send_poll(chat_id, context):
-    players = chat_id in game_rooms and game_rooms[chat_id]
 
-    if not players:
-        raise ValueError
+    questions = [player.to_json() for player in context.chat_data["players"]]
 
     message = context.bot.send_poll(
         chat_id,
         "Primera Pregunta",
-        players,
+        questions,
         is_anonymous=False,
         allows_multiple_answers=True,
     )
@@ -81,7 +70,7 @@ def send_poll(chat_id, context):
     # Save some info about the poll the bot_data for later use in receive_poll_answer
     payload = {
         message.poll.id: {
-            "questions": players,
+            "questions": questions,
             "message_id": message.message_id,
             "chat_id": chat_id,
             "answers": 0,
@@ -118,7 +107,7 @@ def help(update: Update, _: CallbackContext) -> None:
 def main_menu(update: Update, _: CallbackContext) -> None:
     chat_id = update.message.chat.id
     update.message.reply_text(text=get_players_ready_message(
-        chat_id), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD), quote=False)
+        chat_id, _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD), quote=False)
     return PREPARE_GAME
 
 
@@ -131,17 +120,16 @@ def main_menu_in_game(update: Update, _: CallbackContext) -> None:
 
 def join(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
-
     query.answer()
 
     chat_id = query.message.chat.id
     user = query.from_user
 
-    added = add_player(chat_id, user)
+    added = add_player(chat_id, user, _)
 
     if added:
         query.edit_message_text(text=get_players_ready_message(
-            chat_id), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD))
+            chat_id, _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD))
 
     return PREPARE_GAME
 
@@ -158,7 +146,7 @@ def start_game(update: Update, _: CallbackContext):
 
 def exit(update: Update, _: CallbackContext):
     query = update.callback_query
-    clear_room(query.message.chat_id)
+    _.chat_data.clear()
     query.answer()
     query.edit_message_text(text="See you next time!")
     return ConversationHandler.END
@@ -183,10 +171,10 @@ def receive_poll_answer(update: Update, _: CallbackContext):
 
 
 def main():
-    persistence = PicklePersistence(filename='conversationbot')
+    # persistence = PicklePersistence(filename='conversationbot')
 
     updater = Updater(
-        token=os.environ.get('TOKEN'), persistence=persistence, use_context=True)
+        token=os.environ.get('TOKEN'), use_context=True)
 
     dispatcher = updater.dispatcher
 
@@ -208,7 +196,7 @@ def main():
         fallbacks=[CallbackQueryHandler(exit, pattern='^' + str(EXIT) + '$')],
         per_user=False,
         per_message=False,
-        name="GameHandler",
+        # name="GameHandler",
         # persistent=True
     )
 
