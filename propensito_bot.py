@@ -8,10 +8,25 @@ from telegram.ext.basepersistence import BasePersistence
 from telegram.ext.filters import Filters
 from telegram.ext.pollanswerhandler import PollAnswerHandler
 
+from random import randint
+
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
+QUESTIONS = [
+    {"q": "¿Quién es más probable que mate a alguien accidentalmente?", "checked": False},
+    {"q": "¿Quién es más probable que no le gusten mucho las películas?", "checked": False},
+    {"q": "¿Quién es más probable que se convierta en un famoso actor/actriz?",
+        "checked": False},
+    {"q": "¿Quién es más probable que huya para no unirse al circo?", "checked": False},
+    {"q": "¿Quién es más probable que salte de un tren en movimiento?", "checked": False},
+    {"q": "¿Quién es más probable que tenga paranoias?", "checked": False},
+    {"q": "¿Quién es más probable que sea el más atlético?", "checked": False},
+    {"q": "¿Quién es más probable que vea películas románicas?", "checked": False},
+    {"q": "¿Quién es más probable que se convierta en un stripper?", "checked": False},
+    {"q": "¿Quién es más probable que sea detenido por acosar a un oficial de policía?", "checked": False}
+]
 
 # Stages
 PREPARE_GAME, IN_GAME = range(2)
@@ -51,12 +66,13 @@ def add_player(user, context):
 
 def send_poll(chat_id, context):
 
-    questions = [player.first_name for player in context.chat_data["players"]]
+    question = QUESTIONS[randint(0, 9)]["q"]
+    answers = [player.first_name for player in context.chat_data["players"]]
 
     message = context.bot.send_poll(
         chat_id,
-        "Primera Pregunta",
-        questions,
+        question,
+        answers,
         is_anonymous=False,
         allows_multiple_answers=True,
     )
@@ -64,14 +80,16 @@ def send_poll(chat_id, context):
     # Save some info about the poll the bot_data for later use in receive_poll_answer
     payload = {
         message.poll.id: {
-            "questions": questions,
+            "answers": answers,
             "message_id": message.message_id,
             "chat_id": chat_id,
-            "answers": 0,
-        }
+            "question": question,
+        },
+        "players": context.chat_data["players"]
     }
 
-    context.bot_data.update(payload)
+    context.chat_data.update(payload)
+    # context.bot_data.update(payload)
 
 
 MAIN_MENU_KEYBOARD = [
@@ -119,7 +137,6 @@ def join(update: Update, _: CallbackContext) -> None:
     user = query.from_user
     bot = query.bot.get_me()
 
-    print(bot)
     added = add_player(user, _)
     added = add_player(bot, _)
 
@@ -151,19 +168,22 @@ def exit(update: Update, _: CallbackContext):
 def receive_poll_answer(update: Update, _: CallbackContext):
     answer = update.poll_answer
     poll_id = answer.poll_id
-    try:
-        questions = _.bot_data[poll_id]["questions"]
-    # this means this poll answer update is from an old poll, we can't do our answering then
-    except KeyError:
-        return
-    selected_options = answer.option_ids
-    answer_string = ""
-    for question_id in selected_options:
-        answer_string += questions[question_id]
-    _.bot.send_message(
-        _.bot_data[poll_id]["chat_id"],
-        f"{update.effective_user.first_name} feels {answer_string}!",
-    )
+    # try:
+    #     questions = _.bot_data[poll_id]["answers"]
+    # # this means this poll answer update is from an old poll, we can't do our answering then
+    # except KeyError:
+    #     return
+    # selected_options = answer.option_ids
+    # answer_string = ""
+    # for question_id in selected_options:
+    #     answer_string += questions[question_id]
+
+    send_poll(_.chat_data[poll_id]["chat_id"], _)
+
+    # _.bot.send_message(
+    #     _.bot_data[poll_id]["chat_id"],
+    #     f"{update.effective_user.first_name} feels {answer_string}!",
+    # )
 
 
 def main():
@@ -183,7 +203,7 @@ def main():
                 CommandHandler("main_menu", main_menu),
                 CallbackQueryHandler(join, pattern='^' + str(JOIN) + '$'),
                 CallbackQueryHandler(
-                    start_game, pattern='^' + str(START) + '$'),
+                    start_game, pattern='^' + str(START) + '$', pass_chat_data=True),
             ],
             IN_GAME: [
                 CommandHandler("main_menu", main_menu_in_game),
@@ -196,7 +216,8 @@ def main():
         # persistent=True
     )
 
-    dispatcher.add_handler(PollAnswerHandler(receive_poll_answer))
+    dispatcher.add_handler(PollAnswerHandler(
+        receive_poll_answer, pass_chat_data=True))
 
     dispatcher.add_handler(conv_handler)
 
