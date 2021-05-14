@@ -20,31 +20,25 @@ PREPARE_GAME, IN_GAME = range(2)
 JOIN, START, EXIT = range(3)
 
 
-def get_players_ready_message(chat_id, context):
+def get_players_ready_message(context):
     message = "Esperando jugadores...\nUnidos: "
 
-    if not chat_id:
-        return message
-
     users = context.chat_data["players"]
     for user in users:
         message += '\n' + user.first_name
     return message
 
 
-def get_players_in_game_message(chat_id, context):
+def get_players_in_game_message(context):
     message = "Jugadores: \n"
 
-    if not chat_id:
-        return message
-
     users = context.chat_data["players"]
     for user in users:
         message += '\n' + user.first_name
     return message
 
 
-def add_player(chat_id, user, context):
+def add_player(user, context):
     if not context.chat_data.get("players"):
         context.chat_data["players"] = [user]
         return True
@@ -57,7 +51,7 @@ def add_player(chat_id, user, context):
 
 def send_poll(chat_id, context):
 
-    questions = [player.to_json() for player in context.chat_data["players"]]
+    questions = [player.first_name for player in context.chat_data["players"]]
 
     message = context.bot.send_poll(
         chat_id,
@@ -107,14 +101,14 @@ def help(update: Update, _: CallbackContext) -> None:
 def main_menu(update: Update, _: CallbackContext) -> None:
     chat_id = update.message.chat.id
     update.message.reply_text(text=get_players_ready_message(
-        chat_id, _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD), quote=False)
+        _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD), quote=False)
     return PREPARE_GAME
 
 
 def main_menu_in_game(update: Update, _: CallbackContext) -> None:
     chat_id = update.message.chat.id
     update.message.reply_text(text=get_players_in_game_message(
-        chat_id), reply_markup=InlineKeyboardMarkup(MAIN_MENU_IN_GAME), quote=False)
+        _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_IN_GAME), quote=False)
     return IN_GAME
 
 
@@ -122,14 +116,16 @@ def join(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
 
-    chat_id = query.message.chat.id
     user = query.from_user
+    bot = query.bot.get_me()
 
-    added = add_player(chat_id, user, _)
+    print(bot)
+    added = add_player(user, _)
+    added = add_player(bot, _)
 
     if added:
         query.edit_message_text(text=get_players_ready_message(
-            chat_id, _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD))
+            _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD))
 
     return PREPARE_GAME
 
