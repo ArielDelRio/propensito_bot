@@ -38,27 +38,29 @@ JOIN, START, EXIT = range(3)
 def get_players_ready_message(context):
     message = "Esperando jugadores...\nUnidos: "
 
-    users = context.chat_data["players"]
-    for user in users:
-        message += '\n' + user.first_name
+    if context.user_data.get("players"):
+        users = context.user_data["players"]
+        for user in users:
+            message += '\n' + user.first_name
     return message
 
 
 def get_players_in_game_message(context):
     message = "Jugadores: \n"
 
-    users = context.chat_data["players"]
-    for user in users:
-        message += '\n' + user.first_name
+    if context.user_data.get("players"):
+        users = context.user_data["players"]
+        for user in users:
+            message += '\n' + user.first_name
     return message
 
 
 def add_player(user, context):
-    if not context.chat_data.get("players"):
-        context.chat_data["players"] = [user]
+    if not context.user_data.get("players"):
+        context.user_data["players"] = [user]
         return True
-    if user not in context.chat_data['players']:
-        context.chat_data["players"].append(user)
+    if user not in context.user_data['players']:
+        context.user_data["players"].append(user)
         return True
     else:
         return False
@@ -67,7 +69,8 @@ def add_player(user, context):
 def send_poll(chat_id, context):
 
     question = QUESTIONS[randint(0, 9)]["q"]
-    answers = [player.first_name for player in context.chat_data["players"]]
+
+    answers = [player.first_name for player in context.user_data["players"]]
 
     message = context.bot.send_poll(
         chat_id,
@@ -85,10 +88,11 @@ def send_poll(chat_id, context):
             "chat_id": chat_id,
             "question": question,
         },
-        "players": context.chat_data["players"]
+        "players": context.user_data["players"]
     }
 
-    context.chat_data.update(payload)
+    context.user_data.update(payload)
+
     # context.bot_data.update(payload)
 
 
@@ -112,6 +116,7 @@ def start(update: Update, _: CallbackContext) -> None:
 
 
 def help(update: Update, _: CallbackContext) -> None:
+    print(_.user_data)
     update.message.reply_text('Help Message', quote=False)
     return PREPARE_GAME
 
@@ -152,14 +157,38 @@ def start_game(update: Update, _: CallbackContext):
     query.answer()
     query.edit_message_text(text="Start the Game")
 
-    send_poll(update.effective_chat.id, _)
+    # send_poll(update.effective_chat.id, _)
+    question = QUESTIONS[randint(0, 9)]["q"]
+
+    answers = [player.first_name for player in _.user_data["players"]]
+
+    message = _.bot.send_poll(
+        update.effective_chat.id,
+        question,
+        answers,
+        is_anonymous=False,
+        allows_multiple_answers=True,
+    )
+
+    # Save some info about the poll the bot_data for later use in receive_poll_answer
+    payload = {
+        message.poll.id: {
+            "answers": answers,
+            "message_id": message.message_id,
+            "chat_id": update.effective_chat.id,
+            "question": question,
+        },
+    }
+    _.chat_data.update(payload)
+
+    _.user_data.update(payload)
 
     return IN_GAME
 
 
 def exit(update: Update, _: CallbackContext):
     query = update.callback_query
-    _.chat_data.clear()
+    _.user_data.clear()
     query.answer()
     query.edit_message_text(text="See you next time!")
     return ConversationHandler.END
@@ -178,7 +207,15 @@ def receive_poll_answer(update: Update, _: CallbackContext):
     # for question_id in selected_options:
     #     answer_string += questions[question_id]
 
-    send_poll(_.chat_data[poll_id]["chat_id"], _)
+    # print("Chat data")
+    # print(_.chat_data)
+    print("Chat data oever dispatcher")
+    print(_.dispatcher.chat_data)
+
+    # print("User data")
+    # print(_.user_data)
+
+    send_poll(_.user_data[poll_id]["chat_id"], _)
 
     # _.bot.send_message(
     #     _.bot_data[poll_id]["chat_id"],
@@ -187,10 +224,10 @@ def receive_poll_answer(update: Update, _: CallbackContext):
 
 
 def main():
-    # persistence = PicklePersistence(filename='conversationbot')
+    persistence = PicklePersistence(filename='conversationbot')
 
     updater = Updater(
-        token=os.environ.get('TOKEN'), use_context=True)
+        token=os.environ.get('TOKEN'), persistence=persistence, use_context=True)
 
     dispatcher = updater.dispatcher
 
@@ -203,7 +240,7 @@ def main():
                 CommandHandler("main_menu", main_menu),
                 CallbackQueryHandler(join, pattern='^' + str(JOIN) + '$'),
                 CallbackQueryHandler(
-                    start_game, pattern='^' + str(START) + '$', pass_chat_data=True),
+                    start_game, pattern='^' + str(START) + '$', pass_user_data=True),
             ],
             IN_GAME: [
                 CommandHandler("main_menu", main_menu_in_game),
@@ -212,17 +249,15 @@ def main():
         fallbacks=[CallbackQueryHandler(exit, pattern='^' + str(EXIT) + '$')],
         per_user=False,
         per_message=False,
-        # name="GameHandler",
-        # persistent=True
+        per_chat=True,
+        name="GameHandler",
+        persistent=True
     )
 
     dispatcher.add_handler(PollAnswerHandler(
-        receive_poll_answer, pass_chat_data=True))
+        receive_poll_answer))
 
     dispatcher.add_handler(conv_handler)
-
-    # dispatcher.add_handler(
-    #     CallbackQueryHandler(main_menu_callback_handler))
 
     updater.start_polling()
     updater.idle()
