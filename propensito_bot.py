@@ -84,14 +84,14 @@ def send_poll(chat_id, context):
 
     # Save some info about the poll the bot_data for later use in receive_poll_answer
     payload = {
-        chat_id: {
-            "players": context.bot_data[chat_id]["players"]
-        },
+        # chat_id: {
+        #     "players": context.bot_data[chat_id]["players"]
+        # },
         message.poll.id: {
-            "answers": answers,
-            "message_id": message.message_id,
+            # "answers": answers,
+            # "message_id": message.message_id,
             "chat_id": chat_id,
-            "question": question,
+            # "question": question,
         }
     }
 
@@ -147,7 +147,7 @@ def join(update: Update, _: CallbackContext) -> None:
     chat_id = query.message.chat_id
 
     added = add_player(chat_id, user, _)
-    added = add_player(chat_id, bot, _)
+    # added = add_player(chat_id, bot, _)
 
     if added:
         query.edit_message_text(text=get_players_ready_message(
@@ -170,7 +170,12 @@ def start_game(update: Update, _: CallbackContext):
 def exit(update: Update, _: CallbackContext):
     query = update.callback_query
     chat_id = query.message.chat.id
-    del _.bot_data[chat_id]
+    if chat_id in _.bot_data:
+        _.bot_data.pop(chat_id)
+        print("Check all bot Data")
+        print(_.bot_data)
+        print("Check if exist yet")
+        print(chat_id in _.bot_data)
     query.answer()
     query.edit_message_text(text="See you next time!")
     return ConversationHandler.END
@@ -182,20 +187,22 @@ def receive_poll_answer(update: Update, _: CallbackContext):
 
     chat_id = _.bot_data[update.poll.id]["chat_id"]
 
-    # chat_id = _.bot_data["chat_id"]
-    # del _.bot_data["chat_id"]
-
-    # bot_data_by_chat_id = _.dispatcher.bot_data[chat_id]
-
-    # _.bot_data.update(bot_data_by_chat_id)
-
+    print('poll ------------\n')
     print(update.poll)
-    send_poll(chat_id, _)
+    print('\npoll ------------\n\n\n')
 
-    # _.bot.send_message(
-    #     _.bot_data[poll_id]["chat_id"],
-    #     f"{update.effective_user.first_name} feels {answer_string}!",
-    # )
+    print('bot data---------\n')
+    print(_.bot_data)
+    print('\nbot data---------\n\n\n')
+
+    # all_vote = all([vote['voter_count'] > 0 for vote in update.poll.options])
+    count_players = len(_.bot_data[chat_id]["players"])
+    all_vote = update.poll.total_voter_count / count_players >= 1
+
+    # print([vote['voter_count'] > 0 for vote in update.poll.options])
+    if all_vote:
+        send_poll(chat_id, _)
+        _.bot_data.pop(update.poll.id)
 
 
 def main():
@@ -228,6 +235,17 @@ def main():
         name="GameHandler",
         persistent=True
     )
+
+    # dispatcher.add_handler(CommandHandler("start", start))
+    # dispatcher.add_handler(CommandHandler("main_menu", main_menu))
+    # dispatcher.add_handler(CallbackQueryHandler(
+    #     join, pattern='^' + str(JOIN) + '$'))
+
+    # dispatcher.add_handler(CallbackQueryHandler(
+    #     start_game, pattern='^' + str(START) + '$'))
+
+    # dispatcher.add_handler(CallbackQueryHandler(
+    #     exit, pattern='^' + str(EXIT) + '$'))
 
     dispatcher.add_handler((PollHandler(receive_poll_answer)))
 
