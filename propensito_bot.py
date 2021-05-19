@@ -205,6 +205,12 @@ def receive_poll_answer(update: Update, _: CallbackContext):
         _.bot_data.pop(update.poll.id)
 
 
+def clear_all(update: Update, _: CallbackContext):
+    update.message.reply_text(text="clear data", quote=False)
+    _.bot_data.clear()
+    return ConversationHandler.END
+
+
 def main():
     persistence = PicklePersistence(filename='conversationbot')
 
@@ -214,6 +220,9 @@ def main():
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("help", help))
+
+    cbq_exit = CallbackQueryHandler(exit, pattern='^' + str(EXIT) + '$')
+    ch_cls = CommandHandler("cls", clear_all)
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
@@ -228,7 +237,7 @@ def main():
                 CommandHandler("main_menu", main_menu_in_game),
             ],
         },
-        fallbacks=[CallbackQueryHandler(exit, pattern='^' + str(EXIT) + '$')],
+        fallbacks=[cbq_exit, ch_cls],
         per_user=False,
         per_message=False,
         per_chat=True,
