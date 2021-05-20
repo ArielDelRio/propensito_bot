@@ -113,10 +113,9 @@ def receive_poll_answer(update: Update, _: CallbackContext):
     print('\nbot data---------\n\n\n')
 
     count_players = len(_.bot_data[chat_id]["players"])
-    all_vote = poll.total_voter_count / count_players > 0
+    all_vote = poll.total_voter_count / count_players >= 1
 
     if all_vote:
-
         winners = get_winners_by_poll(poll)
 
         set_result_in_summary(poll.question, winners, chat_id, _)
