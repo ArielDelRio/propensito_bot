@@ -31,7 +31,7 @@ QUESTIONS = [
 PREPARE_GAME, IN_GAME = range(2)
 
 # Callback data
-JOIN, START, EXIT = range(3)
+JOIN, START, EXIT, CURRENT_POLL = range(4)
 
 
 MAIN_MENU_KEYBOARD = [
@@ -43,5 +43,7 @@ MAIN_MENU_KEYBOARD = [
 ]
 
 MAIN_MENU_IN_GAME = [
+    [InlineKeyboardButton("Repetir pregunta",
+                          callback_data=str(CURRENT_POLL))],
     [InlineKeyboardButton("X", callback_data=str(EXIT))],
 ]

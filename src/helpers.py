@@ -81,27 +81,18 @@ def send_poll(chat_id, context):
         chat_id,
         question,
         answers,
-        is_anonymous=False,
+        is_anonymous=True,
         allows_multiple_answers=True,
     )
 
-    # Save some info about the poll the bot_data for later use in receive_poll_answer
-    payload = {
-        # chat_id: {
-        #     "players": context.bot_data[chat_id]["players"]
-        # },
+    context.bot_data[chat_id]["current_poll"] = message.message_id
+
+    context.bot_data.update({
         message.poll.id: {
-            # "answers": answers,
-            # "message_id": message.message_id,
             "chat_id": chat_id,
-
-            # Pass the question index
             "question_index": question_index
-            # "question": question,
         }
-    }
-
-    context.bot_data.update(payload)
+    })
 
 
 def get_winners_by_poll(poll):

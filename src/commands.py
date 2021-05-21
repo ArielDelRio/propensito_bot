@@ -155,6 +155,15 @@ def receive_poll_answer(update: Update, _: CallbackContext):
             return ConversationHandler.END
 
 
+def get_current_poll(update: Update, _: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    chat_id = query.message.chat_id
+
+    poll_id = _.bot_data[chat_id]["current_poll"]
+    _.bot.forward_message(chat_id, chat_id, poll_id)
+
+
 def error_handler(update: object, _: CallbackContext) -> None:
     """Log the error and send a telegram message to notify the developer."""
     # Log the error before we do anything else, so we can see it even if something breaks.

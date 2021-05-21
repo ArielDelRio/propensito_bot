@@ -30,6 +30,8 @@ def main():
             ],
             IN_GAME: [
                 CommandHandler("main_menu", main_menu_in_game),
+                CallbackQueryHandler(
+                    get_current_poll, pattern='^' + str(CURRENT_POLL) + '$'),
             ],
         },
         fallbacks=[
