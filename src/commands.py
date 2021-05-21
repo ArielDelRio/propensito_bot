@@ -17,10 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 def start(update: Update, _: CallbackContext):
-
     chat_id = update.effective_chat.id
     user = update.effective_user
     added = add_player(user, chat_id, _)
+    bot = update.message.bot.get_me()
+    added = add_player(bot, chat_id, _)
 
     if added:
         set_game_master(user, chat_id, _)
@@ -64,11 +65,9 @@ def join(update: Update, _: CallbackContext):
     query.answer()
 
     user = query.from_user
-    bot = query.bot.get_me()
     chat_id = query.message.chat_id
 
     added = add_player(chat_id, user, _)
-    # added = add_player(chat_id, bot, _)
 
     if added:
         query.edit_message_text(text=get_players_ready_message(
@@ -79,6 +78,7 @@ def join(update: Update, _: CallbackContext):
 
 
 def start_game(update: Update, _: CallbackContext):
+
     query = update.callback_query
     query.answer()
     query.edit_message_text(text="Start the Game")
@@ -94,12 +94,21 @@ def start_game(update: Update, _: CallbackContext):
 def exit(update: Update, _: CallbackContext):
     query = update.callback_query
     chat_id = query.message.chat.id
-    if chat_id in _.bot_data:
-        _.bot_data.pop(chat_id)
+    user_to_exit = query.from_user
+
     query.answer()
-    query.message.reply_sticker(
-        sticker=STICKERS["PENNY_PUG_HEART_BROKEN"], quote=False)
-    query.edit_message_text(text="See you next time! 👋")
+
+    if chat_id in _.bot_data:
+        if user_to_exit == _.bot_data[chat_id]["game_master"]:
+            clear_room(chat_id, _)
+            send_bye_message(query.message)
+        else:
+            user_leave(user_to_exit, chat_id, _)
+
+            query.edit_message_text(text=get_players_ready_message(
+                chat_id,
+                _), reply_markup=InlineKeyboardMarkup(MAIN_MENU_KEYBOARD))
+
     return ConversationHandler.END
 
 
@@ -166,12 +175,13 @@ def error_handler(update: object, _: CallbackContext) -> None:
         f'<pre>{html.escape(tb_string)}</pre>'
     )
 
-    chat_id = update.message.chat.id if update.message else update.callback_query.message.chat.id
+    if update:
+        chat_id = update.message.chat.id if update.message else update.callback_query.message.chat.id
 
-    # Finally, send the message
-    _.bot.send_message(chat_id=DEVELOPER_CHAT_ID,
-                       text=message, parse_mode=ParseMode.HTML)
+        # Finally, send the message
+        _.bot.send_message(chat_id=DEVELOPER_CHAT_ID,
+                           text=message, parse_mode=ParseMode.HTML)
 
-    send_not_understand_message(chat_id, _)
+        send_not_understand_message(chat_id, _)
 
     return ConversationHandler.END

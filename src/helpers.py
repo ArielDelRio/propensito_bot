@@ -48,6 +48,17 @@ def set_game_master(user, chat_id, context):
     context.bot_data[chat_id]["game_master"] = user
 
 
+def clear_room(chat_id, context):
+    context.bot_data.pop(chat_id)
+
+
+def user_leave(user, chat_id, context):
+    if len(context.bot_data[chat_id]["players"]) < 2:
+        clear_room(chat_id, context)
+    else:
+        context.bot_data[chat_id]["players"].pop(user)
+
+
 def send_poll(chat_id, context):
 
     questions = context.bot_data[chat_id]["questions"]
@@ -124,6 +135,13 @@ def send_welcome_message(message_to_reply, chat_id, context):
 
     message_to_reply.reply_text(text='Bienvenido a Propensito Game\n' + get_players_ready_message(chat_id, context), reply_markup=InlineKeyboardMarkup(
         MAIN_MENU_KEYBOARD), quote=False)
+
+
+def send_bye_message(message_to_reply):
+    message_to_reply.reply_text(text="See you next time! 👋", quote=False)
+
+    message_to_reply.reply_sticker(
+        sticker=STICKERS["PENNY_PUG_HEART_BROKEN"], quote=False)
 
 
 def send_not_understand_message(chat_id, context):
