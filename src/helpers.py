@@ -1,6 +1,8 @@
 from random import randint
 
-from src.constants import QUESTIONS
+from src.constants import STICKERS
+
+from telegram.parsemode import ParseMode
 
 
 def get_players_ready_message(chat_id, context):
@@ -102,3 +104,11 @@ def set_result_in_summary(question, winners, chat_id, context):
 
 def check_if_end_polls(chat_id, context):
     return len(context.bot_data[chat_id]["questions"]) == 0
+
+
+def send_not_understand_message(chat_id, context):
+    context.bot.send_sticker(
+        chat_id=chat_id, sticker=STICKERS["PENNY_PUG_SAD"])
+
+    context.bot.send_message(
+        chat_id=chat_id, text="Sorry i can't help you now 😔", parse_mode=ParseMode.HTML)

@@ -167,10 +167,6 @@ def error_handler(update: object, _: CallbackContext) -> None:
     _.bot.send_message(chat_id=DEVELOPER_CHAT_ID,
                        text=message, parse_mode=ParseMode.HTML)
 
-    _.bot.send_sticker(
-        chat_id=chat_id, sticker=STICKERS["PENNY_PUG_SAD"])
-
-    _.bot.send_message(chat_id=chat_id, text="Sorry i can't help you now 😔",
-                       parse_mode=ParseMode.HTML)
+    send_not_understand_message(chat_id, _)
 
     return ConversationHandler.END
