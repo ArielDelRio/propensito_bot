@@ -17,8 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 def start(update: Update, _: CallbackContext):
-    update.message.reply_sticker(
-        sticker=STICKERS["PENNY_PUG_ANXIOUS"], quote=False)
+
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    added = add_player(user, chat_id, _)
+
+    if added:
+        set_game_master(user, chat_id, _)
+
 
     update.message.reply_text(text='Bienvenido a Propensito Game\nEsperando jugadores...\n', reply_markup=InlineKeyboardMarkup(
         MAIN_MENU_KEYBOARD), quote=False)

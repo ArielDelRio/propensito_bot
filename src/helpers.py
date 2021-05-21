@@ -11,6 +11,9 @@ def get_players_ready_message(chat_id, context):
     if chat_id in context.bot_data:
         users = context.bot_data[chat_id]["players"]
         for user in users:
+            if user.id == context.bot_data[chat_id]["game_master"].id:
+                message += user.first_name + " (GM🔸)"
+            else:
             message += '\n' + user.first_name
     return message
 
@@ -21,11 +24,14 @@ def get_players_in_game_message(chat_id, context):
     if chat_id in context.bot_data:
         users = context.bot_data[chat_id]["players"]
         for user in users:
+            if user.id == context.bot_data[chat_id]["game_master"].id:
+                message += user.first_name + " (GM🔸)"
+            else:
             message += '\n' + user.first_name
     return message
 
 
-def add_player(chat_id, user, context):
+def add_player(user, chat_id, context):
     if not context.bot_data.get(chat_id):
         context.bot_data[chat_id] = {"players": [user]}
         return True
@@ -34,6 +40,10 @@ def add_player(chat_id, user, context):
         context.bot_data[chat_id]["players"].append(user)
         return True
     return False
+
+
+def set_game_master(user, chat_id, context):
+    context.bot_data[chat_id]["game_master"] = user
 
 
 def send_poll(chat_id, context):
