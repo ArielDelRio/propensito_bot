@@ -25,9 +25,8 @@ def start(update: Update, _: CallbackContext):
     if added:
         set_game_master(user, chat_id, _)
 
+        send_welcome_message(update.message, chat_id, _)
 
-    update.message.reply_text(text='Bienvenido a Propensito Game\nEsperando jugadores...\n', reply_markup=InlineKeyboardMarkup(
-        MAIN_MENU_KEYBOARD), quote=False)
     return PREPARE_GAME
 
 

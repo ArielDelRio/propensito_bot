@@ -1,6 +1,8 @@
 from random import randint
 
-from src.constants import STICKERS
+from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
+
+from src.constants import MAIN_MENU_KEYBOARD, STICKERS
 
 from telegram.parsemode import ParseMode
 
@@ -14,7 +16,7 @@ def get_players_ready_message(chat_id, context):
             if user.id == context.bot_data[chat_id]["game_master"].id:
                 message += user.first_name + " (GM🔸)"
             else:
-            message += '\n' + user.first_name
+                message += '\n' + user.first_name
     return message
 
 
@@ -27,7 +29,7 @@ def get_players_in_game_message(chat_id, context):
             if user.id == context.bot_data[chat_id]["game_master"].id:
                 message += user.first_name + " (GM🔸)"
             else:
-            message += '\n' + user.first_name
+                message += '\n' + user.first_name
     return message
 
 
@@ -114,6 +116,14 @@ def set_result_in_summary(question, winners, chat_id, context):
 
 def check_if_end_polls(chat_id, context):
     return len(context.bot_data[chat_id]["questions"]) == 0
+
+
+def send_welcome_message(message_to_reply, chat_id, context):
+    message_to_reply.reply_sticker(
+        sticker=STICKERS["PENNY_PUG_ANXIOUS"], quote=False)
+
+    message_to_reply.reply_text(text='Bienvenido a Propensito Game\n' + get_players_ready_message(chat_id, context), reply_markup=InlineKeyboardMarkup(
+        MAIN_MENU_KEYBOARD), quote=False)
 
 
 def send_not_understand_message(chat_id, context):
