@@ -35,7 +35,6 @@ def main():
         fallbacks=[
             CallbackQueryHandler(exit, pattern='^' + str(EXIT) + '$'),
             CommandHandler("cls", clear_all),
-            dispatcher.add_error_handler(error_handler)
         ],
         per_user=False,
         per_message=False,
@@ -43,6 +42,8 @@ def main():
         name="propensito_bot",
         persistent=True
     )
+
+    dispatcher.add_error_handler(error_handler)
 
     dispatcher.add_handler(PollHandler(receive_poll_answer))
 
