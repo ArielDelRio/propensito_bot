@@ -20,8 +20,8 @@ def start(update: Update, _: CallbackContext):
     chat_id = update.effective_chat.id
     user = update.effective_user
     added = add_player(user, chat_id, _)
-    bot = update.message.bot.get_me()
-    added = add_player(bot, chat_id, _)
+    # bot = update.message.bot.get_me()
+    # added = add_player(bot, chat_id, _)
 
     if added:
         set_game_master(user, chat_id, _)
