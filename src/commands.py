@@ -78,17 +78,21 @@ def join(update: Update, _: CallbackContext):
 
 
 def start_game(update: Update, _: CallbackContext):
-
     query = update.callback_query
     query.answer()
-    query.edit_message_text(text="Start the Game")
 
-    # Put questions inside a bot_data chat id to remove answered questions
-    _.bot_data[query.message.chat_id]["questions"] = QUESTIONS
+    user = query.from_user
+    chat_id = query.message.chat_id
 
-    send_poll(query.message.chat_id, _)
+    if is_game_master(user, chat_id, _) and count_players(chat_id, _) > 1:
+        query.edit_message_text(text="Start the Game")
 
-    return IN_GAME
+        # Put questions inside a bot_data chat id to remove answered questions
+        _.bot_data[query.message.chat_id]["questions"] = QUESTIONS
+
+        send_poll(query.message.chat_id, _)
+
+        return IN_GAME
 
 
 def exit(update: Update, _: CallbackContext):

@@ -48,12 +48,20 @@ def set_game_master(user, chat_id, context):
     context.bot_data[chat_id]["game_master"] = user
 
 
+def is_game_master(user, chat_id, context):
+    return user == context.bot_data[chat_id]["game_master"]
+
+
 def clear_room(chat_id, context):
     context.bot_data.pop(chat_id)
 
 
 def user_leave(user, chat_id, context):
-        context.bot_data[chat_id]["players"].pop(user)
+    context.bot_data[chat_id]["players"].pop(user)
+
+
+def count_players(chat_id, context):
+    return len(context.bot_data[chat_id]["players"])
 
 
 def send_poll(chat_id, context):
