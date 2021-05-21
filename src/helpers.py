@@ -53,9 +53,6 @@ def clear_room(chat_id, context):
 
 
 def user_leave(user, chat_id, context):
-    if len(context.bot_data[chat_id]["players"]) < 2:
-        clear_room(chat_id, context)
-    else:
         context.bot_data[chat_id]["players"].pop(user)
 
 

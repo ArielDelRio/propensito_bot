@@ -99,7 +99,7 @@ def exit(update: Update, _: CallbackContext):
     query.answer()
 
     if chat_id in _.bot_data:
-        if user_to_exit == _.bot_data[chat_id]["game_master"]:
+        if user_to_exit == _.bot_data[chat_id]["game_master"] or len(_.bot_data[chat_id]["players"]) < 2:
             clear_room(chat_id, _)
             send_bye_message(query.message)
         else:
