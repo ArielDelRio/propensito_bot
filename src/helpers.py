@@ -8,7 +8,7 @@ from telegram.parsemode import ParseMode
 
 
 def get_players_ready_message(chat_id, context):
-    message = "Esperando jugadores...\nUnidos: "
+    message = "Esperando jugadores...\nUnidos:\n"
 
     if chat_id in context.bot_data:
         users = context.bot_data[chat_id]["players"]
