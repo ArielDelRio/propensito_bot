@@ -34,7 +34,7 @@ def get_players_in_game_message(chat_id, context):
 
 
 def add_player(user, chat_id, context):
-    if not context.bot_data.get(chat_id):
+    if not chat_id in context.bot_data:
         context.bot_data[chat_id] = {"players": [user]}
         return True
 

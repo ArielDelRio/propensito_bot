@@ -67,7 +67,7 @@ def join(update: Update, _: CallbackContext):
     user = query.from_user
     chat_id = query.message.chat_id
 
-    added = add_player(chat_id, user, _)
+    added = add_player(user, chat_id, _)
 
     if added:
         query.edit_message_text(text=get_players_ready_message(
