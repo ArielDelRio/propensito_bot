@@ -1,0 +1,5 @@
+{
+    "start": {"description": "start - Start this awesome bot"},
+    "help": {"description": "help - Help message"},
+    "main_menu": {"description": "Display a Main Menu for you"}
+}

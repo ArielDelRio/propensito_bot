@@ -1,75 +1,55 @@
-from uuid import uuid4
-from telegram import InlineQueryResultArticle, InputTextMessageContent, Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackContext, CallbackQueryHandler
-import logging
 import os
+import logging
+from telegram.ext import Updater, CommandHandler,  CallbackQueryHandler, PollHandler, ConversationHandler, PicklePersistence
+from src.constants import *
+from src.commands import *
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 
-def start(update: Update, _: CallbackContext) -> None:
-    update.message.reply_text('Hello World')
-
-
-def help_command(update: Update, _: CallbackContext) -> None:
-    update.message.reply_text('Help Message')
-
-
-def callback_handler(update: Update, _: CallbackContext) -> None:
-    chat = update.message.chat
-
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-    # query.answer()
-
-    chat.send_message(text=f"Selected option: {query.data}")
-
-
-def inlinequery(update: Update, _: CallbackContext) -> None:
-    query_start = "Start Game"
-    query_help = "Help message"
-
-    keyboard = [
-        [
-            InlineKeyboardButton("Unirse", callback_data='join'),
-            InlineKeyboardButton("Empezar", callback_data='start'),
-        ],
-        [InlineKeyboardButton("X", callback_data='3')],
-    ]
-
-    results = [
-        InlineQueryResultArticle(
-            id=str(uuid4()),
-            title=query_start,
-            input_message_content=InputTextMessageContent(
-                'Esperando jugadores...'),
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        ),
-        InlineQueryResultArticle(
-            id=str(uuid4()),
-            title=query_help,
-            input_message_content=InputTextMessageContent(query_help),
-        ),
-    ]
-
-    update.inline_query.answer(results)
-
-
 def main():
-    updater = Updater(
-        token=os.environ.get('TOKEN'), use_context=True)
+    persistence = PicklePersistence(filename='propensito_bot')
+
+    updater = Updater(token=os.environ.get('TOKEN'),
+                      persistence=persistence, use_context=True)
 
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("help", help))
 
-    # on non command i.e message - echo the message on Telegram
-    dispatcher.add_handler(InlineQueryHandler(inlinequery))
-    updater.dispatcher.add_handler(
-        CallbackQueryHandler(callback_handler))
+    conversation_handler = ConversationHandler(
+        entry_points=[CommandHandler("start", start)],
+        states={
+            PREPARE_GAME: [
+                CommandHandler("main_menu", main_menu),
+                CallbackQueryHandler(join, pattern='^' + str(JOIN) + '$'),
+                CallbackQueryHandler(
+                    start_game, pattern='^' + str(START) + '$'),
+            ],
+            IN_GAME: [
+                CommandHandler("main_menu", main_menu_in_game),
+                CallbackQueryHandler(
+                    get_current_poll, pattern='^' + str(CURRENT_POLL) + '$'),
+            ],
+        },
+        fallbacks=[
+            CallbackQueryHandler(exit, pattern='^' + str(EXIT) + '$'),
+            CommandHandler("cls", clear_all),
+        ],
+        per_user=False,
+        per_message=False,
+        per_chat=True,
+        name="propensito_bot",
+        persistent=True
+    )
+
+    dispatcher.add_error_handler(error_handler)
+
+    dispatcher.add_handler(PollHandler(receive_poll_answer))
+
+    dispatcher.add_handler(conversation_handler)
 
     updater.start_polling()
     updater.idle()
