@@ -2,7 +2,7 @@ from random import randint
 
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 
-from src.constants import MAIN_MENU_KEYBOARD, STICKERS
+from src.constants import MAIN_MENU_KEYBOARD, QUESTIONS, STICKERS
 
 from telegram.parsemode import ParseMode
 
@@ -146,3 +146,14 @@ def send_not_understand_message(chat_id, context):
 
     context.bot.send_message(
         chat_id=chat_id, text="Sorry i can't help you now 😔", parse_mode=ParseMode.HTML)
+
+
+def generate_questions(count=10):
+    questions = []
+    for i in range(count):
+        new_question = QUESTIONS[randint(0, len(QUESTIONS))]
+        if new_question not in questions:
+            questions.append(new_question)
+        else:
+            i -= 1
+    return questions

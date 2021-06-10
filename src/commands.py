@@ -88,7 +88,9 @@ def start_game(update: Update, _: CallbackContext):
         query.edit_message_text(text="Start the Game")
 
         # Put questions inside a bot_data chat id to remove answered questions
-        _.bot_data[query.message.chat_id]["questions"] = QUESTIONS
+        questions = generate_questions()
+
+        _.bot_data[query.message.chat_id]["questions"] = questions
 
         send_poll(query.message.chat_id, _)
 
