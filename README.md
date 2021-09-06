@@ -1,19 +1,20 @@
 # Propensito_bot
 
-Propensito_bot es un bot de telegram el cual se puede integrar en un grupo y permitir a sus integrantes jugar el clásico juego de "Quien es mas probable que...?" o "Quien es mas propenso que...?".
+Propensito_bot is a telegram bot which can be integrated into a group and allow its members to play the classic game of "Who is more likely than ...?" or "Who is more likely than ...?"
 
-## Sobre el bot
+## About the bot
 
-Al iniciar el bot en un grupo, este comienza a la espera de que se unan mas jugadores, y cuando estén listos el game master puede iniciar la partida.
+When starting the bot in a group, it starts waiting for more players to join, and when they are ready the game master can start the game.
 
-El juego empieza haciendo una serie de preguntas del tipo "Quien es mas probable que...?" o "Quien es mas propenso que...?" y las posibles respuestas son los jugadores que se unieron a la partida.
+The game begins by asking a series of questions such as "Who is most likely ...?" or "Who is more likely than ...?" and the possible answers are the players who joined the game.
 
-El juego finaliza mostrando un resumen de los resultados de las preguntas y quienes fueron los seleccionados por la mayoría en cada pregunta.
+The game ends by showing a summary of the results of the questions and who was selected by the majority in each question.
 
-## Tecnología
-Este bot se desarrolló en Python con la librería [python-telegram-bot](https://python-telegram-bot.org/)
+## Technology
 
-## Resultado
+This bot was developed in Python with the library [python-telegram-bot](https://python-telegram-bot.org/)
 
-Para jugar con el bot se puede unir al siguiente grupo de telegram [propensito_bot_group](https://t.me/propensito_bot_group)
-y el bot para unirlo a su propio grupo de amigos es [propensito_bot](http://t.me/propensito_bot)
+## Result
+
+To play with the bot you can join the following telegram group [propensito_bot_group](https://t.me/propensito_bot_group)
+and the bot to join him to his own group of friends is [propensito_bot](http://t.me/propensito_bot)
